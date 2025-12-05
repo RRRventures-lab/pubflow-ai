@@ -1,0 +1,115 @@
+# ============================================================================
+# PubFlow AI - Docker Ignore
+# Files and directories to exclude from Docker build context
+# ============================================================================
+
+# ----------------------
+# Git
+# ----------------------
+.git
+.gitignore
+.gitattributes
+
+# ----------------------
+# Dependencies
+# ----------------------
+**/node_modules
+**/.pnpm-store
+
+# ----------------------
+# Build outputs
+# ----------------------
+**/dist
+**/.nuxt
+**/.output
+**/build
+**/.next
+
+# ----------------------
+# Environment files (use Docker env vars instead)
+# ----------------------
+.env
+.env.*
+!.env.example
+
+# ----------------------
+# IDE and editors
+# ----------------------
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# ----------------------
+# Test coverage
+# ----------------------
+**/coverage
+**/.nyc_output
+
+# ----------------------
+# Documentation
+# ----------------------
+docs
+*.md
+!README.md
+LICENSE
+
+# ----------------------
+# Docker files (prevent recursion)
+# ----------------------
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# ----------------------
+# CI/CD
+# ----------------------
+.github
+.gitlab-ci.yml
+.travis.yml
+.circleci
+Jenkinsfile
+
+# ----------------------
+# OS files
+# ----------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------
+# Logs
+# ----------------------
+**/*.log
+**/logs
+
+# ----------------------
+# Temporary files
+# ----------------------
+**/tmp
+**/temp
+**/.cache
+
+# ----------------------
+# Test files (optional - uncomment for smaller prod images)
+# ----------------------
+# **/*.test.ts
+# **/*.spec.ts
+# **/tests
+# **/test
+# **/__tests__
+
+# ----------------------
+# Development files
+# ----------------------
+**/.eslintrc*
+**/.prettierrc*
+**/tsconfig.*.json
+**/vitest.config.*
+**/jest.config.*
+
+# ----------------------
+# Nginx (has its own volume)
+# ----------------------
+nginx/ssl/*
+!nginx/ssl/.gitkeep

@@ -1,0 +1,274 @@
+# ============================================================================
+# PubFlow AI - Docker Compose Configuration
+# Production-ready multi-service orchestration
+# ============================================================================
+
+version: '3.9'
+
+services:
+  # --------------------------------------------------------------------------
+  # Backend API Service
+  # --------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    image: pubflow-ai-backend:${VERSION:-latest}
+    container_name: pubflow-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      - DATABASE_URL=postgresql://${DB_USER:-pubflow}:${DB_PASSWORD:-pubflow_dev_password}@${DB_HOST:-postgres}:5432/${DB_NAME:-pubflow}
+      - REDIS_URL=redis://${REDIS_HOST:-redis}:6379
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-dev_refresh_secret_change_in_production}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pubflow-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # --------------------------------------------------------------------------
+  # Frontend SSR Service
+  # --------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    image: pubflow-ai-frontend:${VERSION:-latest}
+    container_name: pubflow-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3001"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NUXT_PUBLIC_API_BASE=${API_BASE_URL:-http://backend:3000}
+      - NUXT_PUBLIC_APP_NAME=PubFlow AI
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - pubflow-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # --------------------------------------------------------------------------
+  # AI Worker Service
+  # --------------------------------------------------------------------------
+  ai-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    image: pubflow-ai-backend:${VERSION:-latest}
+    container_name: pubflow-ai-worker
+    restart: unless-stopped
+    command: ["node", "dist/workers/ai-worker.js"]
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=postgresql://${DB_USER:-pubflow}:${DB_PASSWORD:-pubflow_dev_password}@${DB_HOST:-postgres}:5432/${DB_NAME:-pubflow}
+      - REDIS_URL=redis://${REDIS_HOST:-redis}:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-3}
+      - WORKER_POLL_INTERVAL=${WORKER_POLL_INTERVAL:-5000}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pubflow-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - workers
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database with pgvector
+  # --------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: pubflow-postgres
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER:-pubflow}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-pubflow_dev_password}
+      - POSTGRES_DB=${DB_NAME:-pubflow}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/src/infrastructure/database/migrations:/docker-entrypoint-initdb.d:ro
+    networks:
+      - pubflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-pubflow} -d ${DB_NAME:-pubflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  # --------------------------------------------------------------------------
+  # Redis Cache & Job Queue
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: pubflow-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - pubflow-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  # --------------------------------------------------------------------------
+  # BullMQ Dashboard (Job Queue Monitoring)
+  # --------------------------------------------------------------------------
+  bull-board:
+    image: deadly0/bull-board
+    container_name: pubflow-bull-board
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=6379
+    ports:
+      - "${BULL_BOARD_PORT:-3002}:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - pubflow-network
+    profiles:
+      - monitoring
+
+  # --------------------------------------------------------------------------
+  # Nginx Reverse Proxy (Production)
+  # --------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: pubflow-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - pubflow-network
+    profiles:
+      - production
+
+  # --------------------------------------------------------------------------
+  # PgBouncer Connection Pooler (Production)
+  # --------------------------------------------------------------------------
+  pgbouncer:
+    image: edoburu/pgbouncer:1.21.0
+    container_name: pubflow-pgbouncer
+    restart: unless-stopped
+    ports:
+      - "6432:6432"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-pubflow}:${DB_PASSWORD:-pubflow_dev_password}@postgres:5432/${DB_NAME:-pubflow}
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=500
+      - DEFAULT_POOL_SIZE=20
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pubflow-network
+    profiles:
+      - production
+
+# --------------------------------------------------------------------------
+# Networks
+# --------------------------------------------------------------------------
+networks:
+  pubflow-network:
+    driver: bridge
+    name: pubflow-network
+
+# --------------------------------------------------------------------------
+# Volumes
+# --------------------------------------------------------------------------
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local

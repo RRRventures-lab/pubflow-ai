@@ -1,0 +1,109 @@
+# ============================================================================
+# PubFlow AI - Docker Compose Override (Development)
+# Development-specific configurations with hot reload
+# ============================================================================
+
+version: '3.9'
+
+services:
+  # --------------------------------------------------------------------------
+  # Backend API - Development Mode
+  # --------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/package.json:/app/package.json:ro
+      - backend-node-modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+    command: npm run dev
+    ports:
+      - "3001:3000"
+      - "9229:9229"  # Node.js debugger
+
+  # --------------------------------------------------------------------------
+  # Frontend - Development Mode with Hot Reload
+  # --------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+      - /app/.nuxt
+      - /app/.output
+    environment:
+      - NODE_ENV=development
+      - NUXT_PUBLIC_API_BASE=http://localhost:3001
+    command: npm run dev
+    ports:
+      - "3000:3000"
+      - "24678:24678"  # Vite HMR
+
+  # --------------------------------------------------------------------------
+  # AI Worker - Development Mode
+  # --------------------------------------------------------------------------
+  ai-worker:
+    volumes:
+      - ./backend/src:/app/src:ro
+    environment:
+      - NODE_ENV=development
+      - LOG_LEVEL=debug
+      - WORKER_POLL_INTERVAL=10000
+    command: npm run dev:worker
+
+  # --------------------------------------------------------------------------
+  # Database - Extended logging
+  # --------------------------------------------------------------------------
+  postgres:
+    command: postgres -c log_statement=all -c log_duration=on
+    ports:
+      - "5432:5432"
+
+  # --------------------------------------------------------------------------
+  # Redis - Enable keyspace notifications
+  # --------------------------------------------------------------------------
+  redis:
+    command: redis-server --appendonly yes --notify-keyspace-events KEA
+    ports:
+      - "6379:6379"
+
+  # --------------------------------------------------------------------------
+  # BullMQ Dashboard - Always enabled in dev
+  # --------------------------------------------------------------------------
+  bull-board:
+    profiles: []  # Override to always run in dev
+
+  # --------------------------------------------------------------------------
+  # MailHog - Email testing
+  # --------------------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog
+    container_name: pubflow-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - pubflow-network
+
+  # --------------------------------------------------------------------------
+  # Adminer - Database management UI
+  # --------------------------------------------------------------------------
+  adminer:
+    image: adminer
+    container_name: pubflow-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    networks:
+      - pubflow-network
+
+volumes:
+  backend-node-modules:
+  frontend-node-modules:
