@@ -154,9 +154,48 @@ gcloud run deploy pubflow-backend \
   --region us-central1
 ```
 
-#### Railway/Render
+#### Railway (Recommended for MVP)
 
-Connect your GitHub repository and configure environment variables in the dashboard.
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and initialize
+cd pubflow-ai/backend
+railway login
+railway init
+
+# Add services
+railway add --plugin postgresql
+railway add --plugin redis
+
+# Enable pgvector extension (in Railway shell)
+railway connect postgresql
+# Then run: CREATE EXTENSION vector;
+
+# Set environment variables in Railway dashboard:
+# - JWT_SECRET (generate: openssl rand -hex 32)
+# - JWT_REFRESH_SECRET (generate: openssl rand -hex 32)
+# - OPENAI_API_KEY
+# - NODE_ENV=production
+# - CORS_ORIGIN=https://your-frontend.vercel.app
+
+# Deploy
+railway up
+
+# Run migrations and seed
+railway run npm run db:migrate
+railway run npm run db:seed
+
+# Get your URL
+railway domain
+```
+
+**Demo credentials after seeding:**
+- Email: demo@pubflow.ai
+- Password: demo1234
+
+#### Render
 
 ---
 

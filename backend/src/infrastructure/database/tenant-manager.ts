@@ -8,6 +8,53 @@ import { logger } from '../logging/logger.js';
 import type { Tenant, TenantSettings } from '../../shared/types/index.js';
 
 // --------------------------------------------------------------------------
+// Security: Schema Name Validation
+// Prevents SQL injection via dynamic schema names
+// --------------------------------------------------------------------------
+
+const SCHEMA_NAME_REGEX = /^tenant_[a-z0-9_]{1,50}$/;
+const MAX_SCHEMA_NAME_LENGTH = 63; // PostgreSQL identifier limit
+
+/**
+ * Validates and sanitizes a schema name to prevent SQL injection
+ * Only allows alphanumeric characters and underscores, prefixed with "tenant_"
+ */
+function validateSchemaName(schemaName: string): string {
+  if (!schemaName || typeof schemaName !== 'string') {
+    throw new Error('Schema name is required');
+  }
+
+  // Sanitize: remove any non-alphanumeric/underscore characters
+  const sanitized = schemaName.toLowerCase().replace(/[^a-z0-9_]/g, '');
+
+  // Ensure it starts with tenant_
+  const finalName = sanitized.startsWith('tenant_') ? sanitized : `tenant_${sanitized}`;
+
+  // Validate length
+  if (finalName.length > MAX_SCHEMA_NAME_LENGTH) {
+    throw new Error(`Schema name too long: ${finalName.length} > ${MAX_SCHEMA_NAME_LENGTH}`);
+  }
+
+  // Validate format
+  if (!SCHEMA_NAME_REGEX.test(finalName)) {
+    throw new Error(`Invalid schema name format: ${finalName}`);
+  }
+
+  return finalName;
+}
+
+/**
+ * Escapes a PostgreSQL identifier (schema, table, column name)
+ * Uses double-quoting as per PostgreSQL standard
+ */
+function escapeIdentifier(identifier: string): string {
+  // Validate first
+  const validated = validateSchemaName(identifier);
+  // Double any existing quotes and wrap in quotes
+  return `"${validated.replace(/"/g, '""')}"`;
+}
+
+// --------------------------------------------------------------------------
 // Tenant Schema DDL
 // This creates all tables for a new tenant schema
 // --------------------------------------------------------------------------
@@ -489,7 +536,9 @@ export class TenantManager {
     planId: string = 'basic',
     settings: TenantSettings = {}
   ): Promise<Tenant> {
-    const schemaName = `tenant_${slug.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    // SECURITY: Validate and sanitize schema name to prevent SQL injection
+    const schemaName = validateSchemaName(`tenant_${slug}`);
+    const escapedSchema = escapeIdentifier(schemaName);
 
     logger.info('Creating new tenant', { name, slug, schemaName });
 
@@ -508,11 +557,11 @@ export class TenantManager {
 
       const tenant = tenantResult.rows[0];
 
-      // Create the tenant's schema
-      await client.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
+      // SECURITY: Use escaped identifier for schema creation
+      await client.query(`CREATE SCHEMA IF NOT EXISTS ${escapedSchema}`);
 
-      // Set search path and create all tables
-      await client.query(`SET search_path TO ${schemaName}`);
+      // SECURITY: Use escaped identifier for search path
+      await client.query(`SET search_path TO ${escapedSchema}`);
       await client.query(TENANT_SCHEMA_DDL);
 
       await client.query('COMMIT');
@@ -604,12 +653,17 @@ export class TenantManager {
       throw new Error(`Tenant not found: ${tenantId}`);
     }
 
-    logger.warn('Dropping tenant schema', { tenantId, schemaName: tenant.schemaName });
+    // SECURITY: Validate schema name from database before using in query
+    const validatedSchemaName = validateSchemaName(tenant.schemaName);
+    const escapedSchema = escapeIdentifier(validatedSchemaName);
 
-    await query(`DROP SCHEMA IF EXISTS ${tenant.schemaName} CASCADE`);
+    logger.warn('Dropping tenant schema', { tenantId, schemaName: validatedSchemaName });
+
+    // SECURITY: Use escaped identifier for DROP SCHEMA
+    await query(`DROP SCHEMA IF EXISTS ${escapedSchema} CASCADE`);
     await publicQuery('DELETE FROM tenants WHERE id = $1', [tenantId]);
 
-    logger.info('Tenant schema dropped', { tenantId, schemaName: tenant.schemaName });
+    logger.info('Tenant schema dropped', { tenantId, schemaName: validatedSchemaName });
   }
 }
 

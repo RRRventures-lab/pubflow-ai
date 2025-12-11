@@ -33,6 +33,7 @@ import { royaltyRoutes } from './application/routes/royalties.js';
 import { aiRoutes } from './application/routes/ai.js';
 import { tenantRoutes } from './application/routes/tenants.js';
 import { healthRoutes, createMetricsHook } from './application/routes/health.js';
+import { musicDataRoutes } from './application/routes/music-data.js';
 
 // --------------------------------------------------------------------------
 // Fastify Instance
@@ -61,8 +62,33 @@ await app.register(helmet, {
   contentSecurityPolicy: process.env.NODE_ENV === 'production',
 });
 
+// SECURITY: Validate CORS origins properly
+const allowedOrigins = (process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'])
+  .map(origin => origin.trim())
+  .filter(origin => {
+    try {
+      new URL(origin);
+      return true;
+    } catch {
+      logger.warn('Invalid CORS origin ignored', { origin });
+      return false;
+    }
+  });
+
 await app.register(cors, {
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (same-origin, mobile apps, curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Reject unknown origins
+    logger.warn('CORS origin rejected', { origin });
+    return callback(new Error('CORS origin not allowed'), false);
+  },
   credentials: true,
 });
 
@@ -72,8 +98,15 @@ await app.register(rateLimit, {
 });
 
 // JWT Authentication
+// SECURITY: JWT secret is REQUIRED - no fallback to prevent weak secrets in production
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret || jwtSecret.length < 32) {
+  logger.error('FATAL: JWT_SECRET environment variable is missing or too short (minimum 32 characters)');
+  process.exit(1);
+}
+
 await app.register(jwt, {
-  secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION_pubflow_secret_key_2024',
+  secret: jwtSecret,
   sign: {
     expiresIn: '15m',
   },
@@ -181,28 +214,61 @@ await app.register(
     await protectedApp.register(cwrRoutes, { prefix: '/cwr' });
     await protectedApp.register(royaltyRoutes, { prefix: '/royalties' });
     await protectedApp.register(aiRoutes, { prefix: '/ai' });
+    await protectedApp.register(musicDataRoutes, { prefix: '/music-data' });
   },
   { prefix: '/api/v1' }
 );
 
 // --------------------------------------------------------------------------
 // WebSocket for Real-time Updates
+// SECURITY: WebSocket connections require authentication
 // --------------------------------------------------------------------------
 
-app.get('/ws', { websocket: true }, (socket, req) => {
-  socket.on('message', (message) => {
-    const data = JSON.parse(message.toString());
-    logger.debug('WebSocket message received', { type: data.type });
+app.get('/ws', { websocket: true }, async (socket, req) => {
+  // SECURITY: Verify JWT token from query parameter or header
+  const token = req.query.token as string || req.headers.authorization?.replace('Bearer ', '');
 
-    // Handle subscription to events
-    if (data.type === 'subscribe') {
-      // Store subscription info on socket
-      (socket as any).subscriptions = data.channels;
+  if (!token) {
+    logger.warn('WebSocket connection rejected: No token provided', { ip: req.ip });
+    socket.close(4001, 'Authentication required');
+    return;
+  }
+
+  try {
+    // Verify the JWT token
+    const decoded = app.jwt.verify(token) as { sub: string; tenantId: string };
+
+    // Store user context on socket
+    (socket as any).userId = decoded.sub;
+    (socket as any).tenantId = decoded.tenantId;
+
+    logger.debug('WebSocket authenticated', { userId: decoded.sub, tenantId: decoded.tenantId });
+  } catch (error) {
+    logger.warn('WebSocket connection rejected: Invalid token', { ip: req.ip, error });
+    socket.close(4002, 'Invalid token');
+    return;
+  }
+
+  socket.on('message', (message) => {
+    try {
+      const data = JSON.parse(message.toString());
+      logger.debug('WebSocket message received', {
+        type: data.type,
+        userId: (socket as any).userId
+      });
+
+      // Handle subscription to events
+      if (data.type === 'subscribe') {
+        // Store subscription info on socket
+        (socket as any).subscriptions = data.channels;
+      }
+    } catch (error) {
+      logger.warn('WebSocket invalid message format', { error });
     }
   });
 
   socket.on('close', () => {
-    logger.debug('WebSocket connection closed');
+    logger.debug('WebSocket connection closed', { userId: (socket as any).userId });
   });
 });
 

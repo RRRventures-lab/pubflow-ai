@@ -1,0 +1,279 @@
+/* ============================================================================
+   PubFlow AI - Design Tokens
+   Liquid Glass Design System - Chrome & Fluid Metallic Effects
+   ============================================================================ */
+
+:root {
+  /* -------------------------------------------------------------------------
+     Liquid Glass Color Palette - Chrome & Metallic
+     ------------------------------------------------------------------------ */
+  /* Chrome/Silver metallic spectrum */
+  --glass-chrome-lightest: #ffffff;
+  --glass-chrome-light: #e8e8eb;
+  --glass-chrome-mid: #c0c0c8;
+  --glass-chrome-dark: #8a8a94;
+  --glass-chrome-darkest: #4a4a52;
+
+  /* Liquid mercury/silver */
+  --glass-mercury-100: rgba(255, 255, 255, 0.95);
+  --glass-mercury-80: rgba(255, 255, 255, 0.8);
+  --glass-mercury-60: rgba(255, 255, 255, 0.6);
+  --glass-mercury-40: rgba(255, 255, 255, 0.4);
+  --glass-mercury-20: rgba(255, 255, 255, 0.2);
+  --glass-mercury-10: rgba(255, 255, 255, 0.1);
+  --glass-mercury-05: rgba(255, 255, 255, 0.05);
+
+  /* Deep black for contrast */
+  --glass-void: #000000;
+  --glass-obsidian: #0a0a0c;
+  --glass-shadow: #121216;
+  --glass-depth: #1a1a1e;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - Primary (Iridescent Blue-Purple)
+     ------------------------------------------------------------------------ */
+  --color-primary-50: #f0f7ff;
+  --color-primary-100: #e0efff;
+  --color-primary-200: #b9ddff;
+  --color-primary-300: #7cc4ff;
+  --color-primary-400: #36a9ff;
+  --color-primary-500: #0a8fff;
+  --color-primary-600: #006dd4;
+  --color-primary-700: #0058ab;
+  --color-primary-800: #054a8d;
+  --color-primary-900: #0a3f74;
+  --color-primary-950: #06274d;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - Accent (Holographic Purple-Pink)
+     ------------------------------------------------------------------------ */
+  --color-accent-50: #faf5ff;
+  --color-accent-100: #f3e8ff;
+  --color-accent-200: #e9d5ff;
+  --color-accent-300: #d8b4fe;
+  --color-accent-400: #c084fc;
+  --color-accent-500: #a855f7;
+  --color-accent-600: #9333ea;
+  --color-accent-700: #7c3aed;
+  --color-accent-800: #6d28d9;
+  --color-accent-900: #5b21b6;
+  --color-accent-950: #3b0764;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - Success (Mint Glass)
+     ------------------------------------------------------------------------ */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-800: #065f46;
+  --color-success-900: #064e3b;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - Warning (Amber Chrome)
+     ------------------------------------------------------------------------ */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-800: #92400e;
+  --color-warning-900: #78350f;
+
+  /* -------------------------------------------------------------------------
+     Color Palette - Error (Ruby Glass)
+     ------------------------------------------------------------------------ */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+
+  /* -------------------------------------------------------------------------
+     Typography Scale
+     ------------------------------------------------------------------------ */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-5xl: 3rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* -------------------------------------------------------------------------
+     Spacing Scale
+     ------------------------------------------------------------------------ */
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+
+  /* -------------------------------------------------------------------------
+     Border Radius (Organic fluid shapes)
+     ------------------------------------------------------------------------ */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --radius-full: 9999px;
+
+  /* -------------------------------------------------------------------------
+     Liquid Glass Shadows
+     ------------------------------------------------------------------------ */
+  /* Inner glass shine */
+  --shadow-glass-inner: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  --shadow-glass-inner-strong: inset 0 2px 4px 0 rgba(255, 255, 255, 0.15);
+
+  /* Outer chrome shadows */
+  --shadow-chrome-sm: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-chrome-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-chrome-lg: 0 8px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-chrome-xl: 0 16px 64px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+
+  /* Liquid drop shadow (for floating elements) */
+  --shadow-liquid:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  /* Reflective highlight */
+  --shadow-reflect:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+  /* Glow effects */
+  --shadow-glow-blue: 0 0 20px rgba(10, 143, 255, 0.3), 0 0 40px rgba(10, 143, 255, 0.15);
+  --shadow-glow-purple: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.15);
+  --shadow-glow-white: 0 0 20px rgba(255, 255, 255, 0.2), 0 0 40px rgba(255, 255, 255, 0.1);
+
+  /* -------------------------------------------------------------------------
+     Transitions (Fluid motion)
+     ------------------------------------------------------------------------ */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slower: 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fluid: 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* -------------------------------------------------------------------------
+     Z-Index Scale
+     ------------------------------------------------------------------------ */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-fixed: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-popover: 60;
+  --z-tooltip: 70;
+  --z-notification: 80;
+
+  /* -------------------------------------------------------------------------
+     Breakpoints (for reference)
+     ------------------------------------------------------------------------ */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* =========================================================================
+   Dark Mode (PRIMARY - Liquid Glass on Black)
+   ========================================================================= */
+.dark,
+:root {
+  --color-surface-DEFAULT: #000000;
+  --color-surface-50: #0a0a0c;
+  --color-surface-100: #121216;
+  --color-surface-200: #1a1a1e;
+  --color-surface-300: #242428;
+  --color-surface-400: #2e2e34;
+  --color-surface-500: #3a3a40;
+  --color-surface-600: #4a4a52;
+  --color-surface-700: #6a6a74;
+  --color-surface-800: #9a9aa4;
+  --color-surface-900: #cacad4;
+  --color-surface-950: #ffffff;
+
+  --color-surface-bg: var(--color-surface-DEFAULT);
+  --color-surface-card: var(--color-surface-100);
+  --color-surface-elevated: var(--color-surface-200);
+  --color-surface-hover: var(--color-surface-300);
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-glass: rgba(255, 255, 255, 0.15);
+}
+
+/* =========================================================================
+   Light Mode (Inverted Glass)
+   ========================================================================= */
+.light {
+  --color-surface-DEFAULT: #f4f4f5;
+  --color-surface-50: #fafafa;
+  --color-surface-100: #ffffff;
+  --color-surface-200: #f4f4f5;
+  --color-surface-300: #e4e4e7;
+  --color-surface-400: #d4d4d8;
+  --color-surface-500: #a1a1aa;
+  --color-surface-600: #71717a;
+  --color-surface-700: #52525b;
+  --color-surface-800: #3f3f46;
+  --color-surface-900: #27272a;
+  --color-surface-950: #18181b;
+
+  --color-surface-bg: var(--color-surface-50);
+  --color-surface-card: var(--color-surface-100);
+  --color-surface-elevated: var(--color-surface-100);
+  --color-surface-hover: var(--color-surface-200);
+
+  --color-text-primary: #18181b;
+  --color-text-secondary: #52525b;
+  --color-text-muted: #71717a;
+
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
+  --color-border-glass: rgba(0, 0, 0, 0.15);
+}

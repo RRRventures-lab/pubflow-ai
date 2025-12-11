@@ -30,9 +30,11 @@
   "devDependencies": {
     "@nuxt/devtools": "^1.5.2",
     "@nuxtjs/tailwindcss": "^6.12.1",
+    "@playwright/test": "^1.57.0",
     "@types/node": "^22.7.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.11.1",
+    "playwright": "^1.57.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2",

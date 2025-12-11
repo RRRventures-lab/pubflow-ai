@@ -1,19 +1,21 @@
 <template>
-  <div class="min-h-screen bg-surface-50 dark:bg-surface-950">
+  <div class="min-h-screen bg-black">
     <!-- Sidebar -->
     <aside
       :class="[
-        'fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-200 ease-out',
-        'bg-white dark:bg-surface-900 border-r border-surface-200 dark:border-surface-800',
+        'fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-fluid',
+        'bg-gradient-to-b from-white/[0.08] via-white/[0.04] to-transparent',
+        'backdrop-blur-2xl',
+        'border-r border-white/10',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       ]"
     >
       <!-- Logo -->
-      <div class="flex items-center gap-3 h-16 px-6 border-b border-surface-200 dark:border-surface-800">
-        <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
-          <span class="text-white font-bold text-sm">PF</span>
+      <div class="flex items-center gap-3 h-16 px-6 border-b border-white/10">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-white/30 via-white/20 to-white/10 flex items-center justify-center shadow-chrome-md border border-white/20">
+          <span class="text-white font-bold text-lg">P</span>
         </div>
-        <span class="font-semibold text-surface-900 dark:text-white">PubFlow AI</span>
+        <span class="font-semibold text-white text-lg">PubFlow</span>
       </div>
 
       <!-- Navigation -->
@@ -28,9 +30,9 @@
         />
 
         <!-- Divider -->
-        <div class="my-4 border-t border-surface-200 dark:border-surface-800" />
+        <div class="my-4 border-t border-white/10" />
 
-        <p class="px-3 text-xs font-medium text-surface-400 uppercase tracking-wider mb-2">
+        <p class="px-3 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2">
           AI Tools
         </p>
 
@@ -45,7 +47,7 @@
       </nav>
 
       <!-- Tenant Selector -->
-      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-surface-200 dark:border-surface-800">
+      <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-gradient-to-t from-black/50 to-transparent">
         <TenantSelector />
       </div>
     </aside>
@@ -53,60 +55,62 @@
     <!-- Mobile sidebar backdrop -->
     <div
       v-if="sidebarOpen"
-      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+      class="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden"
       @click="sidebarOpen = false"
     />
 
     <!-- Main content -->
     <div class="lg:pl-64">
       <!-- Top bar -->
-      <header class="sticky top-0 z-30 h-16 bg-white/80 dark:bg-surface-900/80 backdrop-blur-sm border-b border-surface-200 dark:border-surface-800">
+      <header class="sticky top-0 z-30 h-16 bg-black/60 backdrop-blur-2xl border-b border-white/10">
         <div class="flex items-center justify-between h-full px-4 lg:px-6">
           <!-- Mobile menu button -->
           <button
-            class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800"
+            class="lg:hidden p-2 -ml-2 rounded-xl hover:bg-white/10 transition-colors"
             @click="sidebarOpen = true"
           >
-            <Bars3Icon class="w-6 h-6 text-surface-600 dark:text-surface-400" />
+            <Bars3Icon class="w-6 h-6 text-zinc-400" />
           </button>
 
           <!-- Breadcrumb -->
           <div class="hidden lg:flex items-center gap-2 text-sm">
-            <NuxtLink to="/" class="text-surface-500 hover:text-surface-700 dark:hover:text-surface-300">
+            <NuxtLink to="/" class="text-zinc-500 hover:text-white transition-colors">
               Home
             </NuxtLink>
-            <ChevronRightIcon class="w-4 h-4 text-surface-400" />
-            <span class="text-surface-900 dark:text-white font-medium">{{ pageTitle }}</span>
+            <ChevronRightIcon class="w-4 h-4 text-zinc-600" />
+            <span class="text-white font-medium">{{ pageTitle }}</span>
           </div>
 
           <!-- Right side actions -->
           <div class="flex items-center gap-2">
             <!-- Global search -->
             <button
-              class="flex items-center gap-2 px-3 py-1.5 text-sm text-surface-500 bg-surface-100 dark:bg-surface-800 rounded-lg hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
+              class="flex items-center gap-2 px-4 py-2 text-sm text-zinc-400 bg-white/5 rounded-full hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-300"
               @click="openSearch"
             >
               <MagnifyingGlassIcon class="w-4 h-4" />
               <span class="hidden md:inline">Search</span>
-              <kbd class="kbd hidden md:inline">⌘K</kbd>
+              <kbd class="hidden md:inline ml-2 px-1.5 py-0.5 text-[10px] bg-white/10 rounded text-zinc-500 border border-white/10">
+                ⌘K
+              </kbd>
             </button>
 
             <!-- Notifications -->
-            <button class="relative p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800">
-              <BellIcon class="w-5 h-5 text-surface-600 dark:text-surface-400" />
+            <button class="relative p-2.5 rounded-full hover:bg-white/10 transition-colors border border-transparent hover:border-white/10">
+              <BellIcon class="w-5 h-5 text-zinc-400" />
               <span
                 v-if="notificationCount > 0"
-                class="absolute top-1 right-1 w-2 h-2 bg-error-500 rounded-full"
+                class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full ring-2 ring-black shadow-glow-blue"
               />
             </button>
 
             <!-- Dark mode toggle -->
             <button
-              class="p-2 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-800"
+              class="p-2.5 rounded-full hover:bg-white/10 transition-colors border border-transparent hover:border-white/10"
               @click="toggleDarkMode"
             >
-              <SunIcon v-if="isDark" class="w-5 h-5 text-surface-600 dark:text-surface-400" />
-              <MoonIcon v-else class="w-5 h-5 text-surface-600 dark:text-surface-400" />
+              <SunIcon v-if="isDark" class="w-5 h-5 text-zinc-400" />
+              <MoonIcon v-else class="w-5 h-5 text-zinc-400" />
             </button>
 
             <!-- User menu -->
@@ -147,6 +151,7 @@ import {
   SparklesIcon,
   ExclamationTriangleIcon,
   Cog6ToothIcon,
+  CircleStackIcon,
 } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
@@ -157,7 +162,7 @@ const searchOpen = ref(false);
 const shortcutsOpen = ref(false);
 const notificationCount = ref(3);
 
-const isDark = computed(() => colorMode.value === 'dark');
+const isDark = computed(() => colorMode.preference === 'dark');
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -173,6 +178,8 @@ const pageTitle = computed(() => {
     '/ai': 'AI Intelligence',
     '/ai/enrichment': 'AI Enrichment',
     '/ai/conflicts': 'Conflict Detection',
+    '/data': 'Music Data Hub',
+    '/data/tracks': 'Track Details',
     '/settings': 'Settings',
   };
   return titles[route.path] || 'PubFlow AI';
@@ -182,6 +189,7 @@ const navigationItems = [
   { to: '/', icon: HomeIcon, label: 'Dashboard' },
   { to: '/catalog/works', icon: MusicalNoteIcon, label: 'Works', badge: null },
   { to: '/catalog/writers', icon: UserGroupIcon, label: 'Writers' },
+  { to: '/data', icon: CircleStackIcon, label: 'Data Hub', badge: 'New' },
   { to: '/cwr/generate', icon: DocumentTextIcon, label: 'CWR Files' },
   { to: '/royalties/statements', icon: CurrencyDollarIcon, label: 'Royalties' },
 ];
